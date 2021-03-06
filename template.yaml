@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Serverless Quarkus HTTP - hello-1.0-SNAPSHOT
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+    BinaryMediaTypes:
+      - "*/*"
+Parameters:
+  UserPoolId:
+    Type: String
+  Audience:
+    Type: String
+Resources:
+  HelloApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Auth:
+        Authorizers:
+          HelloApiOAuth2:
+            AuthorizationScopes:
+              - email
+            IdentitySource: "$request.header.Authorization"
+            JwtConfiguration:
+              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}
+              audience:
+                - !Ref Audience
+  Hello:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
+      Runtime: java11
+      CodeUri: target/function.zip
+      MemorySize: 512
+      Policies: AWSLambdaBasicExecutionRole
+      Timeout: 15
+      Events:
+        GetResource:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: any
+            ApiId: !Ref HelloApi
+            Auth:
+              Authorizer: HelloApiOAuth2
+
+Outputs:
+  HelloApi:
+    Description: URL for application
+    Value: !Sub 'https://${HelloApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
+    Export:
+      Name: HelloApi

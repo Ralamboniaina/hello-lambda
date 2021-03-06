@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "hello"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-915rmo108ysz"
+s3_prefix = "hello"
+region = "us-east-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "UserPoolId=\"us-east-2_ck5sYUqIy\" Audience=\"4oufv01ijeibdl1rre7cfju84r\""
